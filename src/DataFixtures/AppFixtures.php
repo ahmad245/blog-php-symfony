@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Post;
 use App\Entity\User;
+use App\Entity\Comment;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -16,55 +17,167 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 class AppFixtures extends Fixture
 {
     private $passwordEncoder;
+
+    /**
+     * @var \Faker\Factory
+     */
+    private $faker;
+
+    private const USERS = [
+        [
+             'firstName'=>'superAdmin',
+            'lastName'=>'almasri1',
+            'email' => 'admin@blog.com',
+            'password' => 'secret123#',
+            'roles'=>User::ROLE_SUPERADMIN
+
+        ],
+        [
+            'firstName'=>'writer',
+            'lastName'=>'almasri2',
+            'email' => 'john@blog.com',
+            'password' => 'secret123#',
+            'roles'=>User::ROLE_WRITER
+
+
+        ],
+        [
+            'firstName'=>'commentor',
+            'lastName'=>'almasri3',
+            'email' => 'rob@blog.com',
+            'password' => 'secret123#',
+            'roles'=>User::ROLE_COMMENTATOR
+
+        ],
+        [
+            'firstName'=>'admin',
+            'lastName'=>'almasri4',
+            'email' => 'jenny@blog.com',
+            'password' => 'secret123#',
+            'roles'=>User::ROLE_ADMIN
+
+        ],
+        [
+            'firstName'=>'editor',
+            'lastName'=>'almasri5',
+            'email' => 'han@blog.com',
+            'password' => 'secret123#',
+            'roles'=>User::ROLE_EDITOR
+
+        ],
+        [
+            'firstName'=>'defalut',
+            'lastName'=>'almasri6',
+            'email' => 'jedi@blog.com',
+            'password' => 'secret123#',
+            'roles'=>User::DEFAULT_ROLES
+
+        ],
+    ];
     public function __construct(UserPasswordEncoderInterface $passwordEncoder)
     {
         $this->passwordEncoder=$passwordEncoder;
+        $this->faker = \Faker\Factory::create();
     }
+    /**
+     * Load data fixtures with the passed EntityManager
+     * @param ObjectManager $manager
+     */
     public function load(ObjectManager $manager)
     {
         // $product = new Product();
         // $manager->persist($product);
         $this->loadUser($manager);
-       $this->loadPost($manager);
-       
+        $this->loadPost($manager);
+        $this->loadComments($manager);
+
     }
     public function loadPost(ObjectManager $manager){
-    $user=$this->getReference('user_admin');
-    $post=new Post();
-    $post->setTitle('first post for online');
-    $post->setContent('symfony');
-    $post->setPublish(true);
-    $post->setSlug('first post ');
-    $post->setDate(new \DateTime('2018-07-01 12:00:00'));
-    $post->setAuthor($user);
+        for ($i = 0; $i < 10; $i++) {
 
-    $manager->persist($post);
+            $post = new Post();
+            $post->setTitle($this->faker->realText(30));
+            $post->setContent($this->faker->realText());
+            $post->setPublish($this->faker->boolean);
+            $post->setSlug($this->faker->slug);
+            $post->setDate($this->faker->dateTime);
+            $authorReference = $this->getRandomUserReference($post);
+            $post->setAuthor($authorReference);
+            $this->setReference("post_$i", $post);
+            $manager->persist($post);
+        }
     $manager->flush();
-    /////////////
-    $post=new Post();
-    $post->setTitle('second post for online');
-    $post->setContent('symfony2');
-    $post->setPublish(true);
-    $post->setSlug('second post');
-    $post->setDate(new \DateTime('2018-07-01 12:00:00'));
-    $post->setAuthor($user);
 
-    $manager->persist($post);
-    $manager->flush();
     }
 
     public function loadUser(ObjectManager $manager){
-        $user=new User();
-        $user->setFirstName('ahmad');
-        $user->setLastName('almasri');
-        $user->setEmail('ahmad@gmail.com');
-        $user->setPassword($this->passwordEncoder->encodePassword($user,'123456'));
-        
-        $this->addReference('user_admin',$user);
+        foreach (self::USERS as $userFixture) {
+            $user = new User();
+            $user->setFirstName($userFixture['firstName']);
+            $user->setLastName($userFixture['lastName']);
+            $user->setEmail($userFixture['email']);
+            $user->setPassword($this->passwordEncoder->encodePassword($user, $userFixture['password']));
 
-        $manager->persist($user);
+            $this->addReference('user_'.$userFixture['firstName'], $user);
+            $user->setRoles($userFixture['roles']);
+
+            $manager->persist($user);
+        }
         $manager->flush();
 
 
     }
+    public function loadComments(ObjectManager $manager)
+    {
+        for ($i = 0; $i < 10; $i++) {
+            for ($j = 0; $j < rand(1, 10); $j++) {
+                $comment = new Comment();
+                $comment->setMessage($this->faker->realText());
+                $comment->setDate($this->faker->dateTimeThisYear);
+
+                $authorReference = $this->getRandomUserReference($comment);
+
+                $comment->setAuthor($authorReference);
+                $comment->setPost($this->getReference("post_$i"));
+
+                $manager->persist($comment);
+            }
+        }
+
+        $manager->flush();
+    }
+    public function getRandomUserReference($entity)
+    {
+        $randomUser = self::USERS[rand(0, 5)];
+
+        if ($entity instanceof BlogPost && !count(
+                array_intersect(
+                    [$randomUser['roles']],
+                    [User::ROLE_SUPERADMIN, User::ROLE_ADMIN, User::ROLE_WRITER]
+                )
+            )) {
+            return $this->getRandomUserReference($entity);
+        }
+
+        if ($entity instanceof Comment && !count(
+                array_intersect(
+                    [$randomUser['roles']],
+                    [
+                        User::ROLE_SUPERADMIN,
+                        User::ROLE_ADMIN,
+                        User::ROLE_WRITER,
+                        User::ROLE_COMMENTATOR,
+                    ]
+                )
+            )) {
+            return $this->getRandomUserReference($entity);
+        }
+
+
+        return $this->getReference(
+            'user_'.$randomUser['firstName']
+        );
+    }
+
+
 }

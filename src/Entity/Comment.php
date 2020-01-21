@@ -1,12 +1,39 @@
 <?php
 
 namespace App\Entity;
-
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * @ApiResource()
+ *@ApiResource(
+ *
+ *   itemOperations={
+ *             "get"={ "normalization_context"=
+ *                     {"groups"={"get-comment-with-author"}}},
+ *             "put"={"access_control"="is_granted('ROLE_EDITOR') or (is_granted('ROLE_COMMENTATOR') and object.getAuthor() == user)"}
+ *             },
+ *   collectionOperations={
+ *       "get" ,
+ *       "post"={
+ *         "access_control"="is_granted('ROLE_COMMENTATOR')" ,
+ *         "normalization_context"={
+ *               "groups"={"get-comment-with-author"}
+ *           }
+ *     },
+ *       "api_posts_comments_get_subresource"={
+ *                  "normalization_context"=
+ *                     {"groups"={"get-comment-with-author"}}
+ *                }
+ *
+ *      },
+ *     denormalizationContext={"groups"={"post"}},
+ *     normalizationContext={
+ *               "groups"={"get-comment-with-author"}
+ *           }
+ * )
  * @ORM\Entity(repositoryClass="App\Repository\CommentRepository")
  */
 class Comment
@@ -15,26 +42,33 @@ class Comment
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * @Groups({"get-comment-with-author"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="text")
+     * @Groups({"post","get-comment-with-author"})
+     * @Assert\NotBlank()
+     *  @Assert\Length(min=3,max=3000)
      */
     private $message;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"get-comment-with-author"})
      */
     private $date;
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User",inversedBy="comments")
      *@ORM\JoinColumn(nullable=false)
+     * @Groups({"get-comment-with-author"})
      */
     private $author;
     /**
      *@ORM\ManyToOne(targetEntity="App\Entity\Post",inversedBy="comments")
      *@ORM\JoinColumn(nullable=false)
+     *@Groups({"post"})
      */
     private $post;
 
