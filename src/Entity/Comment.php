@@ -9,7 +9,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  *@ApiResource(
- *
+ * attributes={
+ *          "order"={"date":"DESC"},
+ *          "pagination_client_enabled"=true,
+ *         "pagination_client_items_per_page"=true
+ *      },
  *   itemOperations={
  *             "get"={ "normalization_context"=
  *                     {"groups"={"get-comment-with-author"}}},
@@ -103,7 +107,7 @@ class Comment
     /**
      * @return User
      */
-    public function getAuthor():User
+    public function getAuthor():?User
     {
         return $this->author;
     }
@@ -114,7 +118,7 @@ class Comment
 
         return $this;
     }
-    public function getPost():Post
+    public function getPost():?Post
     {
         return $this->post;
     }
@@ -122,5 +126,9 @@ class Comment
     {
          $this->post=$post;
          return $this;
+    }
+    public function __toString()
+    {
+        return substr($this->message, 0, 20) . '...';
     }
 }

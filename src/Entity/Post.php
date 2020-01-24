@@ -5,15 +5,61 @@ namespace App\Entity;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PostRepository")
+ * @ApiFilter(
+ *     SearchFilter::class,
+ *     properties={
+ *      "id":"exact",
+ *       "title":"partial",
+ *       "content":"partial",
+ *       "author":"exact",
+ *       "author.firstName":"partial"
+ * 
+ *     }
+ *    
+ *   )
+ * @ApiFilter(
+ *   DateFilter::class,
+ *   properties={
+ *      "date"
+ *    }
+ *  )
+ * @ApiFilter(
+ *   OrderFilter::class,
+ * properties={
+ *       "id",
+ *      "date",
+ *       "title"
+ *    }
+ * )
+ * @ApiFilter(
+ *   PropertyFilter::class,
+ *   arguments={
+ *    "parameterName":"properties",
+ *     "overrideDefaultProperties":false,
+ *     "whitelist":{"id","title","content","author","slug"} 
+ *  }
+ * )
  * @ApiResource(
+ *   
+ *   attributes={
+ *          "order"={"date":"DESC"},
+ *          "pagination_client_enabled"=true,
+ *         "pagination_client_items_per_page"=true,
+ *         "maximum_items_per_page"=30,
+ *         "pagination_partial"=true
+ *      },
  *   itemOperations={
  *             "get"={"normalization_context"=
  *                       {"groups"={"get-post-with-author"}}
@@ -23,7 +69,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  *                    }
  *             },
  *   collectionOperations={
- *     "get" ,
+ *     "get"={"normalization_context"=
+ *                       {"groups"={"get-post-with-author"}}
+ *                } ,
  *       "post"={
  *             "access_control"="is_granted('ROLE_WRITER')"
  *           }   
@@ -89,10 +137,18 @@ class Post
      * @Groups({"get-post-with-author"})
      */
     private $comments;
+      /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Image")
+     * @ORM\JoinTable()
+     * @ApiSubresource()
+     * @Groups({"post", "get-post-with-author"})
+     */
+    private $images;
 
     public function __construct()
     {
         $this->comments=new ArrayCollection();
+        $this->images = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -138,7 +194,7 @@ class Post
     /**
      * @return User
      */
-    public function getAuthor():User
+    public function getAuthor():?User
     {
         return $this->author;
     }
@@ -177,6 +233,24 @@ class Post
         $this->comments = $comments;
 
         return $this;
+    }
+    public function getImages(): Collection
+    {
+        return $this->images;
+    }
+
+    public function addImage(Image $image)
+    {
+        $this->images->add($image);
+    }
+
+    public function removeImage(Image $image)
+    {
+        $this->images->removeElement($image);
+    }
+    public function __toString()
+    {
+        return $this->title;
     }
 }
 

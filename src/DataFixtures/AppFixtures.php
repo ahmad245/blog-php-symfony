@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Post;
 use App\Entity\User;
 use App\Entity\Comment;
+use App\Security\TokenGenerator;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
@@ -29,7 +30,8 @@ class AppFixtures extends Fixture
             'lastName'=>'almasri1',
             'email' => 'admin@blog.com',
             'password' => 'secret123#',
-            'roles'=>User::ROLE_SUPERADMIN
+            'roles'=>User::ROLE_SUPERADMIN,
+            'enabled' => true
 
         ],
         [
@@ -37,7 +39,8 @@ class AppFixtures extends Fixture
             'lastName'=>'almasri2',
             'email' => 'john@blog.com',
             'password' => 'secret123#',
-            'roles'=>User::ROLE_WRITER
+            'roles'=>User::ROLE_WRITER,
+            'enabled' => true
 
 
         ],
@@ -46,7 +49,8 @@ class AppFixtures extends Fixture
             'lastName'=>'almasri3',
             'email' => 'rob@blog.com',
             'password' => 'secret123#',
-            'roles'=>User::ROLE_COMMENTATOR
+            'roles'=>User::ROLE_COMMENTATOR,
+            'enabled' => true
 
         ],
         [
@@ -54,7 +58,8 @@ class AppFixtures extends Fixture
             'lastName'=>'almasri4',
             'email' => 'jenny@blog.com',
             'password' => 'secret123#',
-            'roles'=>User::ROLE_ADMIN
+            'roles'=>User::ROLE_ADMIN,
+            'enabled' => true
 
         ],
         [
@@ -62,7 +67,8 @@ class AppFixtures extends Fixture
             'lastName'=>'almasri5',
             'email' => 'han@blog.com',
             'password' => 'secret123#',
-            'roles'=>User::ROLE_EDITOR
+            'roles'=>User::ROLE_EDITOR,
+            'enabled' => false
 
         ],
         [
@@ -70,14 +76,17 @@ class AppFixtures extends Fixture
             'lastName'=>'almasri6',
             'email' => 'jedi@blog.com',
             'password' => 'secret123#',
-            'roles'=>User::DEFAULT_ROLES
+            'roles'=>User::DEFAULT_ROLES,
+            'enabled' => true
 
         ],
     ];
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder)
+    private $tokenGenerator;
+    public function __construct(UserPasswordEncoderInterface $passwordEncoder,TokenGenerator $tokenGenerator)
     {
         $this->passwordEncoder=$passwordEncoder;
         $this->faker = \Faker\Factory::create();
+        $this->tokenGenerator=$tokenGenerator;
     }
     /**
      * Load data fixtures with the passed EntityManager
@@ -116,6 +125,10 @@ class AppFixtures extends Fixture
             $user->setFirstName($userFixture['firstName']);
             $user->setLastName($userFixture['lastName']);
             $user->setEmail($userFixture['email']);
+            $user->setEnabled($userFixture['enabled']);
+            if(!$userFixture['enabled']){
+              $user->setConfirmationToken($this->tokenGenerator->getRandomSecureToken());
+            }
             $user->setPassword($this->passwordEncoder->encodePassword($user, $userFixture['password']));
 
             $this->addReference('user_'.$userFixture['firstName'], $user);
@@ -150,7 +163,7 @@ class AppFixtures extends Fixture
     {
         $randomUser = self::USERS[rand(0, 5)];
 
-        if ($entity instanceof BlogPost && !count(
+        if ($entity instanceof Post && !count(
                 array_intersect(
                     [$randomUser['roles']],
                     [User::ROLE_SUPERADMIN, User::ROLE_ADMIN, User::ROLE_WRITER]

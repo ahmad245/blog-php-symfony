@@ -73,6 +73,7 @@ class UserAttributeNormalizer
         }
 
         $context[self::USER_ATTRIBUTE_NORMALIZER_ALREADY_CALLED] = true;
+       
 
         return $this->serializer->normalize($object, $format, $context);
     }

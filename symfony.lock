@@ -120,6 +120,9 @@
             "./config/routes/easy_admin.yaml"
         ]
     },
+    "egulias/email-validator": {
+        "version": "2.1.15"
+    },
     "fig/link-util": {
         "version": "1.1.0"
     },
@@ -128,6 +131,9 @@
     },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
+    },
+    "jms/metadata": {
+        "version": "2.1.0"
     },
     "laminas/laminas-code": {
         "version": "3.4.1"
@@ -152,6 +158,9 @@
         "files": [
             "./config/packages/lexik_jwt_authentication.yaml"
         ]
+    },
+    "monolog/monolog": {
+        "version": "2.0.2"
     },
     "namshi/jose": {
         "version": "7.2.3"
@@ -218,6 +227,9 @@
         "files": [
             "./config/packages/sensio_framework_extra.yaml"
         ]
+    },
+    "swiftmailer/swiftmailer": {
+        "version": "v6.2.3"
     },
     "symfony/asset": {
         "version": "v5.0.2"
@@ -330,16 +342,39 @@
     "symfony/mime": {
         "version": "v5.0.2"
     },
+    "symfony/monolog-bridge": {
+        "version": "v5.0.3"
+    },
+    "symfony/monolog-bundle": {
+        "version": "3.3",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "3.3",
+            "ref": "222b46a1bb02cd04bbc59700adec2f44f1a644b7"
+        },
+        "files": [
+            "./config/packages/dev/monolog.yaml",
+            "./config/packages/prod/monolog.yaml",
+            "./config/packages/test/monolog.yaml"
+        ]
+    },
     "symfony/options-resolver": {
         "version": "v5.0.2"
     },
     "symfony/orm-pack": {
         "version": "v1.0.7"
     },
+    "symfony/polyfill-intl-grapheme": {
+        "version": "v1.13.1"
+    },
     "symfony/polyfill-intl-icu": {
         "version": "v1.13.1"
     },
     "symfony/polyfill-intl-idn": {
+        "version": "v1.13.1"
+    },
+    "symfony/polyfill-intl-normalizer": {
         "version": "v1.13.1"
     },
     "symfony/polyfill-mbstring": {
@@ -404,6 +439,23 @@
     "symfony/stopwatch": {
         "version": "v5.0.2"
     },
+    "symfony/string": {
+        "version": "v5.0.3"
+    },
+    "symfony/swiftmailer-bundle": {
+        "version": "2.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "2.5",
+            "ref": "ae4d22af30bbd484506bc1817c5a3ef72c855b93"
+        },
+        "files": [
+            "./config/packages/dev/swiftmailer.yaml",
+            "./config/packages/swiftmailer.yaml",
+            "./config/packages/test/swiftmailer.yaml"
+        ]
+    },
     "symfony/translation": {
         "version": "3.3",
         "recipe": {
@@ -464,6 +516,18 @@
     },
     "twig/twig": {
         "version": "v3.0.1"
+    },
+    "vich/uploader-bundle": {
+        "version": "1.5",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "1.5",
+            "ref": "c4f5755b37fb65b9c6a3cbdae91205c15a137ed4"
+        },
+        "files": [
+            "./config/packages/vich_uploader.yaml"
+        ]
     },
     "webimpress/safe-writer": {
         "version": "2.0.0"
