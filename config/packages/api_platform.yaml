@@ -9,7 +9,7 @@ api_platform:
          pagination:
             # enabled: false
             page_parameter_name: _page
-            items_per_page: 10
+            items_per_page: 30
             client_items_per_page: true
             items_per_page_parameter_name: itemsPerPage
             # maximum_items_per_page: 20

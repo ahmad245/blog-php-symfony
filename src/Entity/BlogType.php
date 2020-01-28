@@ -48,8 +48,8 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *   attributes={
  *          
  *          "order"={"name":"DESC"},
- *          "pagination_client_enabled"=true,
- *         "pagination_client_items_per_page"=true,
+ *          "pagination_client_enabled"=false,
+ *         "pagination_client_items_per_page"=false,
  *        
  *      },
  *   itemOperations={
@@ -85,7 +85,7 @@ class BlogType
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"get-blogType"})
+     * @Groups({"get-blogType","post"})
      */
     private $name;
    /**
