@@ -23,6 +23,8 @@ class UserAttributeNormalizer
 
     public function __construct(TokenStorageInterface $tokenStorage)
     {
+        
+       
         $this->tokenStorage = $tokenStorage;
     }
 
@@ -39,15 +41,18 @@ class UserAttributeNormalizer
         string $format = null,
         array $context = []
     ) {
+       
         if (isset($context[self::USER_ATTRIBUTE_NORMALIZER_ALREADY_CALLED])) {
+           
             return false;
         }
-
+      
         return $data instanceof User;
     }
 
     public function normalize($object,string $format = null, array $context = [])
     {
+       
         if ($this->isUserHimself($object)) {
             $context['groups'][] = 'get-owner';
         }
@@ -57,7 +62,7 @@ class UserAttributeNormalizer
     }
 
     private function isUserHimself($object)
-    {
+    { 
         return $object->getUsername() === $this->tokenStorage->getToken()->getUsername();
     }
 
@@ -73,8 +78,9 @@ class UserAttributeNormalizer
         }
 
         $context[self::USER_ATTRIBUTE_NORMALIZER_ALREADY_CALLED] = true;
-       
-
-        return $this->serializer->normalize($object, $format, $context);
+             
+             return $this->serializer->normalize($object, $format, $context);
+             
+        //return $this->normalize($object, $format, $context);
     }
 }

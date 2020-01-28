@@ -57,7 +57,7 @@ class Comment
      *  @Assert\Length(min=3,max=3000)
      */
     private $message;
-
+    
     /**
      * @ORM\Column(type="datetime")
      * @Groups({"get-comment-with-author"})

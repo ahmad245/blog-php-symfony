@@ -57,8 +57,8 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *          "order"={"date":"DESC"},
  *          "pagination_client_enabled"=true,
  *         "pagination_client_items_per_page"=true,
- *         "maximum_items_per_page"=30,
- *         "pagination_partial"=true
+ *         "maximum_items_per_page"=30
+ *        
  *      },
  *   itemOperations={
  *             "get"={"normalization_context"=
@@ -74,9 +74,17 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *                } ,
  *       "post"={
  *             "access_control"="is_granted('ROLE_WRITER')"
- *           }   
+ *           },
+ *       "api_blog_types_posts_get_subresource"={
+ *           "normalization_context"=
+ *                     {"groups"={"get-blogType"}}
+ *                }
+ *            
  *      },
- *     denormalizationContext={"groups"={"post"}}
+ *     denormalizationContext={"groups"={"post"}},
+ *   normalizationContext={
+ *               "groups"={"get-blogType"}
+ *           }
  * )
  */
 class Post
@@ -86,27 +94,27 @@ class Post
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"get-post-with-author"})
+     * @Groups({"get-post-with-author","get-blogType"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"post","get-post-with-author"})
+     * @Groups({"post","get-post-with-author","get-blogType"})
      * @Assert\NotBlank()
      * @Assert\Length(min=3,max=50)
      */
     private $title;
 
     /**
-     * @Groups({"post","get-post-with-author"})
+     * @Groups({"post","get-post-with-author","get-blogType"})
      * @ORM\Column(type="text")
      * @Assert\NotBlank()
      */
     private $content;
 
     /**
-     * @Groups({"post","get-post-with-author"})
+     * @Groups({"post","get-post-with-author","get-blogType"})
      * @ORM\Column(type="boolean")
      * @Assert\NotBlank()
      */
@@ -115,19 +123,19 @@ class Post
    /**
     * @ORM\ManyToOne(targetEntity="App\Entity\User",inversedBy="posts") 
     *@ORM\JoinColumn(nullable=false)
-    * @Groups({"get-post-with-author"})
+    * @Groups({"get-post-with-author","get-blogType"})
   
     */
     private $author;
 
     /**
-     * @Groups({"post","get-blog-post-with-author"})
+     * @Groups({"post","get-blog-post-with-author","get-blogType"})
      * @ORM\Column(type="string",length=255,nullable=true)
      */
     private $slug;
     /**
      * @ORM\Column(type="datetime")
-     * @Groups({"get-post-with-author"})
+     * @Groups({"get-post-with-author","get-blogType"})
      */
     private $date;
     /**
@@ -141,9 +149,15 @@ class Post
      * @ORM\ManyToMany(targetEntity="App\Entity\Image")
      * @ORM\JoinTable()
      * @ApiSubresource()
-     * @Groups({"post", "get-post-with-author"})
+     * @Groups({"post", "get-post-with-author","get-blogType"})
      */
     private $images;
+      /**
+     *@ORM\ManyToOne(targetEntity="App\Entity\BlogType",inversedBy="posts")
+     *@ORM\JoinColumn(nullable=false)
+     *@Groups({"post"})
+     */
+    private $blogType;
 
     public function __construct()
     {
@@ -252,6 +266,16 @@ class Post
     {
         return $this->title;
     }
+
+    public function getBlogType():?BlogType
+    {
+        return $this->blogType;
+    }
+    public function setBlogType(BlogType $blogType):self
+    {
+         $this->blogType=$blogType;
+         return $this;
+    }
 }
 
 
@@ -264,3 +288,5 @@ class Post
 // 	"author_id":9
 
 // }
+
+// "pagination_partial"=true

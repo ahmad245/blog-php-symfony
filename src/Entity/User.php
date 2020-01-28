@@ -53,7 +53,7 @@ use App\Controller\ResetPasswordAction;
  *
  * )
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @UniqueEntity(fields={"email"})
+ * @UniqueEntity("email", groups={"post"})
  */
 class User implements UserInterface
 {
@@ -63,18 +63,18 @@ class User implements UserInterface
     const ROLE_ADMIN = 'ROLE_ADMIN';
     const ROLE_SUPERADMIN = 'ROLE_SUPERADMIN';
 
-    const DEFAULT_ROLES = self::ROLE_COMMENTATOR;
+    const DEFAULT_ROLES =[self::ROLE_COMMENTATOR];
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"get", "get-post-with-author", "get-comment-with-author"})
+     * @Groups({"get", "get-post-with-author", "get-comment-with-author","get-blogType"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"get","post", "put", "get-comment-with-author", "get-post-with-author"})
+     * @Groups({"get","post", "put", "get-comment-with-author", "get-post-with-author","get-blogType"})
      * @Assert\NotBlank(groups={"post"})
      * @Assert\Email(groups={"post"})
      * @Assert\Length(min=3,max=255,groups={"post","get"})
@@ -83,7 +83,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=50)
-     * @Groups({"get","post","put","get-post-with-author","get-comment-with-author"})
+     * @Groups({"get","post","put","get-post-with-author","get-comment-with-author","get-blogType"})
      * @Assert\NotBlank(groups={"post"})
      * @Assert\Length(min=3,max=50,groups={"post"})
      */
@@ -92,7 +92,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=50)
-     * @Groups({"get","post","put","get-comment-with-author","get-post-with-author"})
+     * @Groups({"get","post","put","get-comment-with-author","get-post-with-author","get-blogType"})
      * @Assert\NotBlank(groups={"post"})
      * @Assert\Length(min=3,max=50,groups={"post"})
      */
@@ -168,7 +168,7 @@ class User implements UserInterface
 
 
     /**
-     * @ORM\Column(type="string", length=200)
+     * @ORM\Column(type="array", length=200)
      *  @Groups({"get-admin","get-owner"})
      */
     private $roles;
@@ -269,14 +269,17 @@ class User implements UserInterface
     // Returns the roles granted to the user.
 
 
-    public function getRoles():?array
+    public function getRoles():array
     {
-        return  [$this->roles];
+       
+        return  $this->roles;
     }
 
-    public function setRoles( $roles)
+    public function setRoles(array $roles)
     {
-       $this->roles= $roles;
+     
+       $this->roles=$roles;
+      
 
     }
 
@@ -362,12 +365,15 @@ class User implements UserInterface
      
          public function getConfirmationToken()
          {
+             
              return $this->confirmationToken;
          }
      
-         public function setConfirmationToken($confirmationToken): void
+         public function setConfirmationToken($confirmationToken)
          {
+            
              $this->confirmationToken = $confirmationToken;
+             return $this;
          }
          public function __toString(): string
          {
