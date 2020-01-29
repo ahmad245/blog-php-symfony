@@ -66,7 +66,10 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *                },
  *             "put"={
  *                "access_control"="is_granted('ROLE_EDITOR') or (is_granted('ROLE_WRITER') and object.getAuthor() == user) "
- *                    }
+ *                    },
+ *             "delete"={
+ *              "access_control"="is_granted('ROLE_EDITOR') or (is_granted('ROLE_WRITER') and object.getAuthor() == user) "
+ *               }
  *             },
  *   collectionOperations={
  *     "get"={"normalization_context"=
@@ -131,6 +134,7 @@ class Post
     /**
      * @Groups({"post","get-blog-post-with-author","get-blogType"})
      * @ORM\Column(type="string",length=255,nullable=true)
+     * @Groups({"get-post-with-author","get-blogType"})
      */
     private $slug;
     /**
@@ -155,7 +159,7 @@ class Post
       /**
      *@ORM\ManyToOne(targetEntity="App\Entity\BlogType",inversedBy="posts")
      *@ORM\JoinColumn(nullable=false)
-     *@Groups({"post"})
+     *@Groups({"post","get-post-with-author"})
      */
     private $blogType;
 

@@ -79,7 +79,7 @@ class BlogType
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"get-blogType"})
+     * @Groups({"get-blogType","get-post-with-author"})
      */
     private $id;
 
