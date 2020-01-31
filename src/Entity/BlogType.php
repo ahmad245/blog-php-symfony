@@ -129,6 +129,10 @@ class BlogType
 
         return $this;
     }
+    public function __toString()
+    {
+        return $this->name;
+    }
 }
 
 // "maximum_items_per_page"=300,

@@ -12,13 +12,19 @@ use Symfony\Component\Validator\Constraints as Assert;
  * attributes={
  *          "order"={"date":"DESC"},
  *          "pagination_client_enabled"=true,
- *         "pagination_client_items_per_page"=true
+ *         "pagination_client_items_per_page"=true,
+ *         "maximum_items_per_page"=30
  *      },
  *   itemOperations={
  *             "get"={ "normalization_context"=
  *                     {"groups"={"get-comment-with-author"}}},
- *             "put"={"access_control"="is_granted('ROLE_EDITOR') or (is_granted('ROLE_COMMENTATOR') and object.getAuthor() == user)"}
- *             },
+ *             "put"={"access_control"="is_granted('ROLE_EDITOR') or (is_granted('ROLE_COMMENTATOR') and object.getAuthor() == user)"},
+ *             "delete"={
+ *                "access_control"="is_granted('ROLE_EDITOR') or (is_granted('ROLE_COMMENTATOR') and object.getAuthor() == user)",
+ *                 {"groups"={"delete-with-author"}}
+ *                 }
+ *            
+ *  },
  *   collectionOperations={
  *       "get" ,
  *       "post"={
@@ -46,7 +52,7 @@ class Comment
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"get-comment-with-author"})
+     * @Groups({"get-comment-with-author","delete-with-author"})
      */
     private $id;
 

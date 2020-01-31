@@ -41,10 +41,13 @@ class UploadImageAction
         // Create a new Image instance
         $image = new Image();
         // Validate the form
+        
         $form = $this->formFactory->create(ImageType::class, $image);
         $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
+       
+     
+       // $file = $request->files->get('File');
+        //if ($form->isSubmitted() && $form->isValid()) {
             // Persist the new Image entity
             $this->entityManager->persist($image);
             $this->entityManager->flush();
@@ -52,7 +55,7 @@ class UploadImageAction
             $image->setFile(null);
 
             return $image;
-        }
+      //  }
 
         // Uploading done for us in background by VichUploader...
 

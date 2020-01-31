@@ -13,18 +13,62 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\Validator\Constraints\UserPassword;
 use App\Controller\ResetPasswordAction;
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 
 /**
+ * @ApiFilter(
+ *     SearchFilter::class,
+ *     properties={
+ *      "id":"exact",
+ *       "firstName":"partial",
+ *       "lastName":"partial",
+ *       "email":"exact"
+ * 
+ *     }
+ *    
+ *   )
+ * 
+ * @ApiFilter(
+ *   OrderFilter::class,
+ * properties={
+ *       "id",
+ *       "firstName",
+ *        "lastName"
+ *    }
+ * )
+ * @ApiFilter(
+ *   PropertyFilter::class,
+ *   arguments={
+ *    "parameterName":"properties",
+ *     "overrideDefaultProperties":false,
+ *     "whitelist":{"id","firstName","lastName","email","roles"} 
+ *  }
+ * )
  * @ApiResource(
+ *   attributes={
+ *          "pagination_client_enabled"=true,
+ *         "pagination_client_items_per_page"=true,
+ *         "maximum_items_per_page"=30
+ *        
+ *      },
  *   itemOperations={
  *      "get"={
  *             "access_control"="is_granted('IS_AUTHENTICATED_FULLY')",
  *             "normalization_context"={"groups"={"get"}}
  *      },
  *     "put"={
- *                "access_control"="is_granted('IS_AUTHENTICATED_FULLY') and object == user " ,
+ *                "access_control"=" is_granted('ROLE_SUPERADMIN') or ( is_granted('IS_AUTHENTICATED_FULLY') and object == user) " ,
  *               "denormalization_context"={"groups"={"put"}},
  *              "normalization_context"={"groups"={"get"}}
+ *               },
+ *       "delete"={
+ *                "access_control"=" is_granted('ROLE_SUPERADMIN') or ( is_granted('IS_AUTHENTICATED_FULLY') and object == user) " ,
+ *               "denormalization_context"={"groups"={"delete-user"}},
+ *              "normalization_context"={"groups"={"delete-user"}}
  *               },
  *      "put-reset-password"={
  *             "access_control"="is_granted('IS_AUTHENTICATED_FULLY') and object == user",
@@ -35,6 +79,15 @@ use App\Controller\ResetPasswordAction;
  *                 "groups"={"put-reset-password"}
  *             },
  *             "validation_groups"={"put-reset-password"}
+ *         },
+ *     "put-roles"={
+ *             "access_control"="is_granted('ROLE_SUPERADMIN') or ( is_granted('IS_AUTHENTICATED_FULLY') and object == user) ",
+ *             "method"="PUT",
+ *             "path"="/users/{id}/roles",
+ *             "denormalization_context"={
+ *                 "groups"={"put-roles"}
+ *             },
+ *             "validation_groups"={"put-roles"}
  *         }
  *    },
  *     collectionOperations={
@@ -68,7 +121,7 @@ class User implements UserInterface
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"get", "get-post-with-author", "get-comment-with-author","get-blogType"})
+     * @Groups({"get", "get-post-with-author", "get-comment-with-author","get-blogType","delete-user"})
      */
     private $id;
 
@@ -77,13 +130,13 @@ class User implements UserInterface
      * @Groups({"get","post", "put", "get-comment-with-author", "get-post-with-author","get-blogType"})
      * @Assert\NotBlank(groups={"post"})
      * @Assert\Email(groups={"post"})
-     * @Assert\Length(min=3,max=255,groups={"post","get"})
+     * @Assert\Length(min=3,max=255,groups={"post","get","delete-user"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=50)
-     * @Groups({"get","post","put","get-post-with-author","get-comment-with-author","get-blogType"})
+     * @Groups({"get","post","put","get-post-with-author","get-comment-with-author","get-blogType","delete-user"})
      * @Assert\NotBlank(groups={"post"})
      * @Assert\Length(min=3,max=50,groups={"post"})
      */
@@ -92,7 +145,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=50)
-     * @Groups({"get","post","put","get-comment-with-author","get-post-with-author","get-blogType"})
+     * @Groups({"get","post","put","get-comment-with-author","get-post-with-author","get-blogType","delete-user"})
      * @Assert\NotBlank(groups={"post"})
      * @Assert\Length(min=3,max=50,groups={"post"})
      */
@@ -100,7 +153,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"post","put"})
+     * @Groups({"post","put","delete-user"})
      * @Assert\NotBlank(groups={"post"})
      * @Assert\Regex(
      *   pattern="/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
@@ -169,7 +222,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="array", length=200)
-     *  @Groups({"get-admin","get-owner"})
+     *  @Groups({"get-admin","get-owner","put-roles","delete-user"})
      */
     private $roles;
      /**
