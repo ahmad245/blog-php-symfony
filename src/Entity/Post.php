@@ -144,7 +144,7 @@ class Post
     private $date;
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Comment",mappedBy="post")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\JoinColumn(nullable=false,onDelete="SET NULL")
      * @ApiSubresource()
      * @Groups({"get-post-with-author"})
      */
