@@ -48,13 +48,13 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *   attributes={
  *          
  *          "order"={"name":"DESC"},
- *          "pagination_client_enabled"=false,
- *         "pagination_client_items_per_page"=false,
+ *           "pagination_enabled"=false
+ *         
  *        
  *      },
  *   itemOperations={
  *             "get"={"normalization_context"=
- *                       {"groups"={"get-blogType"}}
+ *                       {"groups"={"get-blogType","get-tag"}}
  *                },
  *             "put"={
  *                "access_control"="is_granted('ROLE_EDITOR') or (is_granted('ROLE_WRITER') and object.getAuthor() == user) "
@@ -62,44 +62,38 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *             },
  *   collectionOperations={
  *     "get"={"normalization_context"=
- *                       {"groups"={"get-blogType"}}
+ *                       {"groups"={"get-blogType","get-tag"}}
  *                } ,
  *       "post"={
  *             "access_control"="is_granted('ROLE_WRITER')"
- *           }   
+ *           }  ,
+ *         "api_posts_tags_get_subresource"={
+ *           "normalization_context"=
+ *                     {"groups"={"get-tag"}}
+ *                } 
  *      },
  *     denormalizationContext={"groups"={"post"}} 
  
  * )
- * @ORM\Entity(repositoryClass="App\Repository\BlogTypeRepository")
+ * @ORM\Entity()
  */
-class BlogType
+class Tag
 {
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
-     * @Groups({"get-blogType","get-post-with-author"})
+     * @Groups({"get-blogType","get-post-with-author","get-tag"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"get-blogType","post"})
+     * @Groups({"get-blogType","post","get-tag","get-post-with-author"})
      */
     private $name;
-   /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Post",mappedBy="blogType")
-     * @ORM\JoinColumn(nullable=false)
-     * @ApiSubresource()
- 
-     */
-    private $posts;
-    public function __construct()
-    {
-        $this->posts=new ArrayCollection();
-        
-    }
+  
+   
 
     public function getId(): ?int
     {
@@ -118,17 +112,7 @@ class BlogType
         return $this;
     }
     
-    public function getPosts():Collection
-    {
-        return $this->posts;
-    }
-
-    public function setComment(Post $posts): self
-    {
-        $this->posts = $posts;
-
-        return $this;
-    }
+ 
     public function __toString()
     {
         return $this->name;
@@ -139,3 +123,8 @@ class BlogType
 //        "pagination_partial"=true
 
 //  @Groups({"get-blogType"})
+
+
+// "pagination_client_enabled"=true,
+// *         "pagination_client_items_per_page"=true,
+// *         "maximum_items_per_page"=100

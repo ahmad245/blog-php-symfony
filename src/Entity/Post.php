@@ -24,7 +24,9 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *       "title":"partial",
  *       "content":"partial",
  *       "author":"exact",
- *       "author.firstName":"partial"
+ *       "author.firstName":"partial",
+ *       "images.id":"exact",
+ *       "tags.name":"exact"
  * 
  *     }
  *    
@@ -48,7 +50,7 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *   arguments={
  *    "parameterName":"properties",
  *     "overrideDefaultProperties":false,
- *     "whitelist":{"id","title","content","author","slug"} 
+ *     "whitelist":{"id","title","content","author","slug","tags.id"} 
  *  }
  * )
  * @ApiResource(
@@ -73,7 +75,7 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *             },
  *   collectionOperations={
  *     "get"={"normalization_context"=
- *                       {"groups"={"get-post-with-author"}}
+ *                       {"groups"={"get-post-with-author","get-tag"}}
  *                } ,
  *       "post"={
  *             "access_control"="is_granted('ROLE_WRITER')"
@@ -144,11 +146,19 @@ class Post
     private $date;
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Comment",mappedBy="post")
-     * @ORM\JoinColumn(nullable=false,onDelete="SET NULL")
+     * @ORM\JoinColumn(nullable=true,onDelete="SET NULL")
      * @ApiSubresource()
      * @Groups({"get-post-with-author"})
      */
     private $comments;
+
+     /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Like_user",mappedBy="post")
+     * @ORM\JoinColumn(nullable=true,onDelete="SET NULL")
+     * @ApiSubresource()
+     * @Groups({"get-post-with-author","delete-with-author","get-blogType"})
+     */
+    private $likes;
       /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Image")
      * @ORM\JoinTable()
@@ -163,10 +173,27 @@ class Post
      */
     private $blogType;
 
+      /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Tag")
+     * @ORM\JoinTable()
+     * @ApiSubresource()
+     * @Groups({"post", "get-post-with-author","get-blogType","get-tag"})
+     */
+    private $tags;
+      /**
+     * @ORM\Column(type="string", length=255,nullable=true)
+     * @Groups({"post","get-post-with-author","get-blogType"})
+     * @Assert\Length(min=3,max=255)
+     */
+    private $description;
+
     public function __construct()
     {
         $this->comments=new ArrayCollection();
         $this->images = new ArrayCollection();
+        $this->tags=new ArrayCollection();
+        $this->likes=new ArrayCollection();
+       
     }
 
     public function getId(): ?int
@@ -252,6 +279,21 @@ class Post
 
         return $this;
     }
+
+    public function getLikes():Collection
+    { 
+        return $this->likes;
+    }
+
+    public function setLike(Like_user $like): self
+    {
+        
+        $this->likes = $like;
+       die($like);
+
+        return $this;
+    }
+
     public function getImages(): Collection
     {
         return $this->images;
@@ -280,6 +322,36 @@ class Post
          $this->blogType=$blogType;
          return $this;
     }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
+    }
+
+   
+
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    public function addTag(Tag $tag)
+    {
+        $this->tags->add($tag);
+    }
+
+    public function removeTag(Tag $tag)
+    {
+        $this->tags->removeElement($tag);
+    }
+
 }
 
 
@@ -294,3 +366,82 @@ class Post
 // }
 
 // "pagination_partial"=true
+
+// nullable=true
+
+/**
+ * @ORM\ManyToMany(targetEntity="App\Entity\Image", inversedBy="users")
+ */
+// private $likes;
+
+// public function __construct()
+// {
+//     $this->images = new ArrayCollection();
+//     $this->likes = new ArrayCollection();
+// }
+//  ....
+//  /**
+//  * @return Collection|Image[]
+//  */
+// public function getLikes(): Collection
+// {
+//     return $this->likes;
+// }
+
+// public function addLike(Image $like): self
+// {
+//     if (!$this->likes->contains($like)) {
+//         $this->likes[] = $like;
+//     }
+
+//     return $this;
+// }
+
+// public function removeLike(Image $like): self
+// {
+//     if ($this->likes->contains($like)) {
+//         $this->likes->removeElement($like);
+//     }
+
+//     return $this;
+// }
+
+
+// /**
+//  * @ORM\ManyToMany(targetEntity="App\Entity\User", mappedBy="likes")
+//  */
+// private $users;
+
+// public function __construct()
+// {
+//     $this->likes = new ArrayCollection();
+//     $this->users = new ArrayCollection();
+// }
+// ...
+// /**
+//  * @return Collection|User[]
+//  */
+// public function getUsers(): Collection
+// {
+//     return $this->users;
+// }
+
+// public function addUser(User $user): self
+// {
+//     if (!$this->users->contains($user)) {
+//         $this->users[] = $user;
+//         $user->addLike($this);
+//     }
+
+//     return $this;
+// }
+
+// public function removeUser(User $user): self
+// {
+//     if ($this->users->contains($user)) {
+//         $this->users->removeElement($user);
+//         $user->removeLike($this);
+//     }
+
+//     return $this;
+// }

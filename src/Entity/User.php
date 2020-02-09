@@ -97,7 +97,8 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *         "validation_groups"={"post"}
  *       },
  *        "get"={
- *           "normalization_context"=
+ *                 
+ *                 "normalization_context"=
  *                 {"groups"={"get"}} 
  *               } 
         
@@ -232,6 +233,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="boolean")
+     *  @Groups({"get-admin","get-owner","put-roles","delete-user"})
      */
     private $enabled;
 
@@ -241,10 +243,20 @@ class User implements UserInterface
     
     private $confirmationToken;
 
+    
+     /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Like_user",mappedBy="author")
+     * @ORM\JoinColumn(nullable=true,onDelete="SET NULL")
+     * @ApiSubresource()
+     * @Groups({"get-post-with-author","delete-with-author","get"})
+     */
+    private $likes;
+
     public function __construct()
     {
         $this->posts=new ArrayCollection();
         $this->comments=new ArrayCollection();
+        $this->likes=new ArrayCollection();
         $this->roles = self::DEFAULT_ROLES;
         $this->enabled = false;
         $this->confirmationToken = null;
@@ -318,6 +330,24 @@ class User implements UserInterface
     {
         return $this->comments;
     }
+
+
+      /**
+     * @return Collection
+     */
+    public function getLikes():Collection
+    {
+        return $this->likes;
+    }
+
+    public function setLike(Like_user $like): self
+    {
+        $this->likes = $like;
+
+        return $this;
+    }
+
+
 
     // Returns the roles granted to the user.
 
@@ -428,6 +458,11 @@ class User implements UserInterface
              $this->confirmationToken = $confirmationToken;
              return $this;
          }
+
+
+        
+
+
          public function __toString(): string
          {
              return $this->firstName;

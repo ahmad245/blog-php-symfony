@@ -77,7 +77,7 @@ class Comment
     private $author;
     /**
      *@ORM\ManyToOne(targetEntity="App\Entity\Post",inversedBy="comments")
-     *@ORM\JoinColumn(nullable=false)
+     *@ORM\JoinColumn(nullable=true,onDelete="SET NULL")
      *@Groups({"post"})
      */
     private $post;
